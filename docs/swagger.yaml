@@ -1,0 +1,100 @@
+basePath: /
+definitions:
+  internal_httpapi.CreateURLRequest:
+    properties:
+      url:
+        example: https://example.com/page
+        type: string
+    type: object
+  internal_httpapi.CreateURLResponse:
+    properties:
+      code:
+        example: aBc12Xy
+        type: string
+      short_url:
+        example: http://localhost:8080/aBc12Xy
+        type: string
+    type: object
+  internal_httpapi.ErrorResponse:
+    properties:
+      error:
+        example: 'invalid url: must be http or https'
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for creating short links and redirecting to original URLs.
+  title: URL Shortener API
+  version: "1.0"
+paths:
+  /{code}:
+    get:
+      description: Redirects to the original long URL for the given short code.
+      parameters:
+      - description: Short code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "302":
+          description: Redirect to long URL
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpapi.ErrorResponse'
+      summary: Resolve a short code
+      tags:
+      - urls
+  /api/urls:
+    post:
+      consumes:
+      - application/json
+      description: Accepts a long HTTP/HTTPS URL and returns a short code and full
+        short URL.
+      parameters:
+      - description: Long URL to shorten
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpapi.CreateURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_httpapi.CreateURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpapi.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpapi.ErrorResponse'
+      summary: Create a short URL
+      tags:
+      - urls
+  /health:
+    get:
+      description: Returns ok when the service is running.
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - system
+swagger: "2.0"
